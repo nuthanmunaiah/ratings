@@ -1,9 +1,9 @@
 # Constants Initialization
 METRICS <- c(
-  "AndroRisk" = "Androrisk Score",
+  "PermissionCount" = "# Permissions",
   "OPrivCount" = "# Over Permissions",
   "UPrivCount" = "# Under Permissions",
-  "PermissionCount" = "# Permissions"
+  "AndroRisk" = "Androrisk Score"
 )
 
 GENRES <- c(
@@ -64,21 +64,40 @@ split.dataset <- function(dataset, metric, grouping.variable, threshold = 0.1){
   return(list("upper" = upper, "lower" = lower))
 }
 
-run.wilcox <- function(population.one, population.two, metric){
+run.wilcox <- function(population.one, population.two, metric, alpha = 0.05){
   population.one.metric <- population.one[[metric]]
   population.two.metric <- population.two[[metric]]
 
-  result <- vector(mode = "list", length = 5)
+  result <- vector(mode = "list", length = 8)
   names(result) <- c(
-    "wilcox.test.out", "one.med", "two.med", "one.mean", "two.mean"
+    "wilcox.test.out", "is.significant",
+    "one.median", "med.ieq", "two.median",
+    "one.mean", "mean.ieq", "two.mean"
   )
   result$wilcox.test.out <- wilcox.test(
     population.one.metric, population.two.metric
   )
+  result$is.significant <- "No"
+  if(result$wilcox.test.out$p.value <= alpha){
+    result$is.significant <- "Yes"
+  }
 
   result$one.median = round(median(population.one.metric, na.rm=TRUE), 4)
   result$two.median = round(median(population.two.metric, na.rm=TRUE), 4)
+  result$median.ieq = get.inequality(result$one.median, result$two.median)
+
   result$one.mean = round(mean(population.one.metric, na.rm=TRUE), 4)
   result$two.mean = round(mean(population.two.metric, na.rm=TRUE), 4)
+  result$mean.ieq = get.inequality(result$one.mean, result$two.mean)
+
   return(result)
+}
+
+get.inequality <- function(one, two){
+  if(one == two)
+    return("=")
+  else if(one > two)
+    return(">")
+  else
+    return("<")
 }

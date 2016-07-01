@@ -35,25 +35,14 @@ for(metric in names(METRICS)){
   test.outcome <- rbind(
     test.outcome,
     data.frame(
-      "genre" = "-", "metric" = metric,
-      "p" = result$wilcox.test.out$p.value,
+      "genre" = "-", "metric" = metric, "n" = nrow(dataset),
+      "p" = sprintf("%.4e", result$wilcox.test.out$p.value),
+      "is.significant" = result$is.significant,
       "lower.median" = result$one.median,
-      "compare.median" = (
-        if(result$one.median == result$two.median) "="
-        else if(result$one.median > result$two.median)
-          ">"
-        else
-          "<"
-      ),
+      "compare.median" = result$median.ieq,
       "upper.median" = result$two.median,
       "lower.mean" = result$one.mean,
-      "compare.mean" = (
-        if(result$one.mean == result$two.mean) "="
-        else if(result$one.mean > result$two.mean)
-          ">"
-        else
-          "<"
-      ),
+      "compare.mean" = result$mean.ieq,
       "upper.mean" = result$two.mean
     )
   )
@@ -74,25 +63,14 @@ for(genre in GENRES){
     test.outcome <- rbind(
       test.outcome,
       data.frame(
-        "genre" = genre, "metric" = metric,
-        "p" = result$wilcox.test.out$p.value,
+        "genre" = genre, "metric" = metric, "n" = nrow(genre.dataset),
+        "p" = sprintf("%.4e", result$wilcox.test.out$p.value),
+        "is.significant" = result$is.significant,
         "lower.median" = result$one.median,
-        "compare.median" = (
-          if(result$one.median == result$two.median) "="
-          else if(result$one.median > result$two.median)
-            ">"
-          else
-            "<"
-        ),
+        "compare.median" = result$median.ieq,
         "upper.median" = result$two.median,
         "lower.mean" = result$one.mean,
-        "compare.mean" = (
-          if(result$one.mean == result$two.mean) "="
-          else if(result$one.mean > result$two.mean)
-            ">"
-          else
-            "<"
-        ),
+        "compare.mean" = result$mean.ieq,
         "upper.mean" = result$two.mean
       )
     )
