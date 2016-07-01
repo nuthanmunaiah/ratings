@@ -30,31 +30,59 @@ plot.dataset <- dataset
 rating.key <- c("UserRating")
 rating.label <- c("User Rating")
 
+index <- 1
+xmins <- vector(mode = "list", length = length(METRICS))
+ymaxs <- vector(mode = "list", length = length(METRICS))
+cors <- vector(mode = "list", length = length(METRICS))
 plot.source <- data.frame()
-for(name in colnames(plot.dataset)){
-  if(name %in% names(METRICS)){
-    plot.source <- rbind(
-      plot.source,
-      data.frame(
-        "rating" = plot.dataset[[rating.key]],
-        "metric.label" = METRICS[name], "metric.value" = plot.dataset[[name]],
-        row.names = NULL
-      )
-    )
-  }
+for(name in names(METRICS)){
+  plot.source.subset <- data.frame(
+    "rating" = plot.dataset[[rating.key]],
+    "metric.label" = METRICS[name], "metric.value" = plot.dataset[[name]],
+    row.names = NULL
+  )
+
+  xmins[index] <- min(plot.source.subset$rating)
+  ymaxs[index] <- max(plot.source.subset$metric.value)
+  cors[index] <- get.spearmansrho(plot.source.subset, "rating", "metric.value")
+  index <- index + 1
+
+  plot.source <- rbind(plot.source, plot.source.subset)
 }
+
+plot.labels <- data.frame(
+  "metric.label" = METRICS,
+  "x" = unlist(xmins), "y" = unlist(ymaxs), "correlation" = unlist(cors)
+)
 
 # Export Resolution: 1440 x 560
 ggplot(plot.source, aes(x = rating, y = metric.value)) +
-  geom_point(size = 1) +
+  geom_hex() +
   geom_smooth(method = "lm", se = F) +
-  facet_wrap(~ metric.label, nrow = 1, scales = "free") +
+  geom_label(
+    data = plot.labels, parse = T, inherit.aes = F, label.size = 0,
+    show.legend = F,
+    aes(
+      x = x, y = y, label = paste("rho==", correlation, sep = ""),
+      hjust = 0, vjust = 1, fontface = "bold", alpha = 0.3
+    )
+  ) +
+  facet_wrap(~ metric.label, nrow = 2, scales = "free") +
   scale_x_continuous(breaks = seq(0.0, 5.0, by = 0.5)) +
+  scale_fill_gradientn(colors = c("gray", "black"), name = "Density") +
   labs(
     title = "Scatter Plot of Avg. User Rating Versus Security Metrics",
     x = "Avg. User Rating", y = "Metric Value"
   ) +
-  plot.theme
+  guides(
+    fill = guide_colorbar(
+      barwidth = 0.5, barheight = 10,
+      title = "Density",
+      title.position = "top"
+    )
+  ) +
+  plot.theme +
+  theme(legend.position = "right")
 
 #####################
 ### Box Plots
