@@ -15,6 +15,7 @@ init.libraries <- function(){
   suppressPackageStartupMessages(library("ggplot2"))
   suppressPackageStartupMessages(library("grid"))
   suppressPackageStartupMessages(library("gridExtra"))
+  suppressPackageStartupMessages(library("hexbin"))
   suppressPackageStartupMessages(library("knitr"))
   suppressPackageStartupMessages(library("stringr"))
 }
@@ -46,9 +47,12 @@ get.data <- function(file, header=T){
 }
 
 get.spearmansrho <- function(dataset, column.one, column.two, p.value = 0.05){
-  correlation <- cor.test(dataset[[column.one]], dataset[[column.two]], method = "spearman", exact = F)
+  correlation <- cor.test(
+    dataset[[column.one]], dataset[[column.two]],
+    method = "spearman", exact = F
+  )
   if(correlation$p.value > p.value){
-    stop(paste("Spearman's correlation insignificant with p-value =", correlation$p.value))
+    warning(paste("Spearman's insignificant with p =", correlation$p.value))
   }
   return(round(correlation$estimate, 4))
 }
