@@ -55,7 +55,7 @@ plot.labels <- data.frame(
   "x" = unlist(xmins), "y" = unlist(ymaxs), "correlation" = unlist(cors)
 )
 
-# Export Resolution: 1440 x 560
+# Export Resolution: (a) 1440 x 560 for two rows (b) 1600 x 440 for one row
 ggplot(plot.source, aes(x = rating, y = metric.value)) +
   geom_hex() +
   geom_smooth(method = "lm", se = F) +
@@ -100,11 +100,11 @@ plot.dataset <- rbind(
     "value" = components$upper$LowerDownloads
   ),
   data.frame(
-    "type" = "l", "metric.key" = "ur", "metric.label" = "Avg. User Ratings",
+    "type" = "l", "metric.key" = "ur", "metric.label" = "Avg. User Rating",
     "value" = components$lower$UserRating
   ),
   data.frame(
-    "type" = "u", "metric.key" = "ur", "metric.label" = "Avg. User Ratings",
+    "type" = "u", "metric.key" = "ur", "metric.label" = "Avg. User Rating",
     "value" = components$upper$UserRating
   )
 )
@@ -112,27 +112,29 @@ plot.dataset <- rbind(
 #### Prepare Individual Plots
 box.downloads <- ggplotGrob(
   ggplot(plot.dataset[plot.dataset$metric.key == "dl",], aes(type, value)) +
-    geom_boxplot(aes(fill = type)) +
+    geom_boxplot(aes(fill = type), outlier.size = 1) +
     facet_wrap(~ metric.label, scales = "free") +
     scale_y_log10() +
     scale_x_discrete(
-      breaks = c("l", "u"), labels = c("Low Rated", "High Rated")
+      breaks = c("l", "u"), labels = c("Low-rated", "High-rated")
     ) +
     scale_fill_manual(values = c("u" = "#636363", "l" = "#f0f0f0")) +
     labs(title = NULL, x = NULL, y = "Metric Value (Log Scale)") +
     plot.theme +
     theme(
       legend.position = "none",
-      axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5)
+      axis.text.x = element_text(
+        angle = 0, vjust = 0, hjust = 0.5, margin = margin(5, 0, 0, 0)
+      )
     )
 )
 
 box.ratings <- ggplotGrob(
   ggplot(plot.dataset[plot.dataset$metric.key == "ur",], aes(type, value)) +
-    geom_boxplot(aes(fill = type)) +
+    geom_boxplot(aes(fill = type), outlier.size = 1) +
     facet_wrap(~ metric.label, scales = "free") +
     scale_x_discrete(
-      breaks = c("l", "u"), labels = c("Low Rated", "High Rated")
+      breaks = c("l", "u"), labels = c("Low-rated", "High-rated")
     ) +
     scale_fill_manual(values = c("u" = "#636363", "l" = "#f0f0f0")) +
     labs(
@@ -141,10 +143,14 @@ box.ratings <- ggplotGrob(
     plot.theme +
     theme(
       legend.position = "none",
-      axis.text.x = element_text(angle = 0, vjust = 0, hjust = 0.5)
+      axis.text.x = element_text(
+        angle = 0, vjust = 0, hjust = 0.5, margin = margin(5, 0, 0, 0)
+      )
     )
 )
 
 #### Arrange Plots
-##### Export Resolution: 560 x 320
-plot.grid <- grid.arrange(box.downloads, box.ratings, nrow = 1)
+##### Export Resolution: 560 x 280
+plot.grid <- grid.arrange(
+  box.downloads, box.ratings, nrow = 1, widths = c(1.1,1)
+)
